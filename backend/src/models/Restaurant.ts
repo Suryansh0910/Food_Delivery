@@ -1,0 +1,23 @@
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface IRestaurant extends Document {
+  owner: mongoose.Types.ObjectId;
+  name: string;
+  description: string;
+  address: string;
+  image?: string;
+  isApproved: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const RestaurantSchema: Schema = new Schema({
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  address: { type: String, required: true },
+  image: { type: String },
+  isApproved: { type: Boolean, default: false } // Admin approval
+}, { timestamps: true });
+
+export default mongoose.model<IRestaurant>('Restaurant', RestaurantSchema);

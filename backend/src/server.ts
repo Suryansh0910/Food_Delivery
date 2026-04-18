@@ -1,0 +1,45 @@
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import authRoutes from './routes/authRoutes';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5001;
+
+// Middleware
+app.use(cors({
+  optionsSuccessStatus: 200 // Resolve HTTP 204 preflight network logs
+}));
+app.use(express.json());
+
+// Main entry route
+app.get('/', (req, res) => {
+  res.send('Food Delivery API is running...');
+});
+
+// Routes
+app.use('/api/auth', authRoutes);
+
+// Connect to MongoDB using Mongoose
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/food_delivery');
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    if (error instanceof Error) {
+        console.error(`Error: ${error.message}`);
+    } else {
+        console.error(`Unknown Error: ${error}`);
+    }
+    process.exit(1);
+  }
+};
+
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server running in mode on port ${PORT}`);
+    });
+});
