@@ -1,20 +1,19 @@
-import { Search, ShoppingBag, Utensils, Star, Clock, MapPin, Bike, Store, ShieldCheck, ArrowRight, User, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { ShoppingBag, Utensils, Star, Clock, MapPin, Bike, Store, ShieldCheck, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 
 function Home() {
   return (
     <div className="min-h-screen bg-white font-sans text-navy-900">
       {/* PART 1: Hero Section (Neo-Brutalism) */}
-      <section className="min-h-[100svh] pt-32 pb-40 bg-[#f4f0ea] border-b-4 border-black relative overflow-hidden flex flex-col justify-center">
+      <section className="h-[calc(100svh-6rem)] bg-[#f4f0ea] border-b-4 border-black relative overflow-hidden flex flex-col justify-center">
         {/* Background decorative grid/dots */}
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#000 2px, transparent 2px)', backgroundSize: '30px 30px' }}></div>
 
-        <div className="max-w-7xl mx-auto px-6 md:px-12 w-full relative z-10 flex-1 flex items-center">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 w-full relative z-10 flex-1 flex items-center pb-20">
           <div className="flex flex-col md:flex-row items-center justify-between gap-12 w-full">
 
             {/* Left side: Massive Typography */}
-            <div className="w-full md:w-3/5 order-2 md:order-1 relative z-10 pt-10 md:pt-0">
+            <div className="w-full md:w-3/5 order-2 md:order-1 relative z-10 pt-4 md:pt-0">
               <motion.div
                 initial={{ x: -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
@@ -105,7 +104,7 @@ function Home() {
           </div>
         </div>
 
-        {/* Endless Marquee Footer */}
+        {/* Both Marquee Bars - pinned to bottom of hero */}
         <div className="absolute bottom-0 left-0 w-full z-40 flex flex-col">
           {/* Top Marquee (Backwards) */}
           <div className="w-full bg-brand-600 text-white border-t-4 border-black py-3 overflow-hidden flex whitespace-nowrap">

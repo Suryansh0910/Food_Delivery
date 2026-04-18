@@ -31,21 +31,27 @@ const seedDatabase = async () => {
       name: 'System Admin',
       email: 'admin@fooddash.com',
       password, // Still password123 for simplicity in the test env
-      role: 'admin'
+      role: 'admin',
+      city: 'Delhi',
+      area: 'Connaught Place'
     });
 
     const owner = await User.create({
       name: 'Gordon Owner',
       email: 'owner@test.com',
       password,
-      role: 'owner'
+      role: 'owner',
+      city: 'Mumbai',
+      area: 'Bandra'
     });
 
     const customer = await User.create({
       name: 'Hungry Harry',
-      email: 'user@test.com',
+      email: 'customer@test.com',
       password,
-      role: 'customer'
+      role: 'customer',
+      city: 'Mumbai',
+      area: 'Bandra'
     });
 
     // 3. Create an approved restaurant for the first owner
@@ -56,13 +62,16 @@ const seedDatabase = async () => {
       image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80',
       address: {
         street: '123 Pixel Street',
-        city: 'New York',
-        pincode: '10001'
+        city: 'Mumbai',
+        area: 'Bandra',
+        pincode: '400050'
       },
       timings: {
         openingTime: '11:00 AM',
         closingTime: '11:00 PM'
       },
+      isVegOnly: false,
+      isOpen: true,
       isApproved: true
     });
 
@@ -70,7 +79,9 @@ const seedDatabase = async () => {
       name: 'Pending Pete',
       email: 'pete@test.com',
       password,
-      role: 'owner'
+      role: 'owner',
+      city: 'Pune',
+      area: 'Koregaon Park'
     });
 
     const pendingRestaurant = await Restaurant.create({
@@ -80,13 +91,16 @@ const seedDatabase = async () => {
       image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80',
       address: {
         street: '404 Hidden Alley',
-        city: 'New York',
-        pincode: '10002'
+        city: 'Pune',
+        area: 'Koregaon Park',
+        pincode: '411001'
       },
       timings: {
         openingTime: '06:00 PM',
         closingTime: '02:00 AM'
       },
+      isVegOnly: false,
+      isOpen: false,
       isApproved: false // Admin needs to approve this!
     });
 

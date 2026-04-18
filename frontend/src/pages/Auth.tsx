@@ -1,11 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Utensils, ArrowRight, Store, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login, register } from '../services/authService';
+import { LOCATIONS, type City } from '../utils/locationData';
 
 const Auth = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // If user is already logged in, do not let them see Auth page
+    // bounce them directly back to their walled-garden dashboard!
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!).role : null;
+    
+    if (token && userRole) {
+      navigate(`/${userRole}/dashboard`);
+    }
+  }, [navigate]);
+
   const [isLogin, setIsLogin] = useState(true);
   const [step, setStep] = useState(1);
   const [role, setRole] = useState<'customer' | 'owner'>('customer');
@@ -16,9 +29,11 @@ const Auth = () => {
     restaurantName: '',
     street: '',
     city: '',
+    area: '',
     pincode: '',
     openingTime: '',
     closingTime: '',
+    isVegOnly: false,
     restaurantDescription: '',
   });
   const [error, setError] = useState('');
@@ -63,8 +78,13 @@ const Auth = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    if (name === 'city') {
+      setFormData({ ...formData, city: value, area: '' });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   return (
@@ -240,6 +260,32 @@ const Auth = () => {
                   </div>
                 )}
 
+                {/* Location selectors for Consumers */}
+                {!isLogin && role === 'customer' && (
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="font-black uppercase text-sm bg-brand-200 border-2 border-black px-2 py-1 inline-block -rotate-1 mb-1">City*</label>
+                      <select name="city" value={formData.city} onChange={handleChange} className="w-full bg-white border-4 border-black p-4 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase appearance-none" required>
+                        <option value="">Select City...</option>
+                        {Object.keys(LOCATIONS).map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {formData.city && (
+                      <div className="flex-1">
+                        <label className="font-black uppercase text-sm bg-brand-200 border-2 border-black px-2 py-1 inline-block rotate-1 mb-1">Area*</label>
+                        <select name="area" value={formData.area} onChange={handleChange} className="w-full bg-white border-4 border-black p-4 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase appearance-none" required>
+                          <option value="">Select Area...</option>
+                          {LOCATIONS[formData.city as City].map((a) => (
+                            <option key={a} value={a}>{a}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div>
                   <label className="font-black uppercase text-lg inline-block bg-[#FFD700] border-2 border-black px-2 mb-2 -rotate-1">Email Address</label>
                   <input
@@ -291,12 +337,28 @@ const Auth = () => {
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <label className="font-black uppercase text-sm bg-brand-200 border-2 border-black px-2 py-1 inline-block -rotate-1 mb-1">City*</label>
-                    <input type="text" name="city" value={formData.city} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300" placeholder="NEW YORK..." required />
+                    <select name="city" value={formData.city} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase appearance-none" required>
+                      <option value="">Select City...</option>
+                      {Object.keys(LOCATIONS).map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="flex-1">
-                    <label className="font-black uppercase text-sm bg-brand-200 border-2 border-black px-2 py-1 inline-block rotate-1 mb-1">Pincode*</label>
-                    <input type="text" name="pincode" value={formData.pincode} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300" placeholder="10001..." required />
-                  </div>
+                  {formData.city && (
+                    <div className="flex-1">
+                      <label className="font-black uppercase text-sm bg-brand-200 border-2 border-black px-2 py-1 inline-block rotate-1 mb-1">Area*</label>
+                      <select name="area" value={formData.area} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase appearance-none" required>
+                        <option value="">Select Area...</option>
+                        {LOCATIONS[formData.city as City].map((a) => (
+                          <option key={a} value={a}>{a}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="font-black uppercase text-sm bg-brand-200 border-2 border-black px-2 py-1 inline-block rotate-1 mb-1">Pincode*</label>
+                  <input type="text" name="pincode" value={formData.pincode} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300" placeholder="10001..." required />
                 </div>
                 <div className="flex gap-4">
                   <div className="flex-1">
@@ -311,6 +373,12 @@ const Auth = () => {
                 <div>
                   <label className="font-black uppercase text-sm bg-black text-white px-2 py-1 inline-block rotate-1 mb-1">Short Description</label>
                   <input type="text" name="restaurantDescription" value={formData.restaurantDescription} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300" placeholder="BEST FOOD IN TOWN..." />
+                </div>
+                <div className="flex items-center gap-3 mt-2 bg-[#00E59B] border-4 border-black p-3 shadow-[4px_4px_0px_#000] w-max cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#000] transition-all" onClick={() => setFormData({...formData, isVegOnly: !formData.isVegOnly})}>
+                  <div className={`w-6 h-6 border-4 border-black flex items-center justify-center bg-white`}>
+                    {formData.isVegOnly && <div className="w-3 h-3 bg-green-600 rounded-full" />}
+                  </div>
+                  <span className="font-black uppercase text-sm text-black">Pure Veg Restaurant</span>
                 </div>
               </motion.div>
             )}

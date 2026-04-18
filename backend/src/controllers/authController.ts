@@ -13,9 +13,9 @@ const generateToken = (id: string, role: string) => {
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { 
-      name, email, password, role, 
-      restaurantName, street, city, pincode, 
-      openingTime, closingTime, restaurantDescription 
+      name, email, password, role, city, area,
+      restaurantName, street, pincode, 
+      openingTime, closingTime, restaurantDescription, isVegOnly
     } = req.body;
 
     const userExists = await User.findOne({ email });
@@ -23,8 +23,13 @@ export const registerUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
+    // Validate location for ALL users
+    if (!city || !area) {
+      return res.status(400).json({ message: 'City and Area are required for all accounts' });
+    }
+
     // If owner, require restaurant data
-    if (role === 'owner' && (!restaurantName || !street || !city || !pincode || !openingTime || !closingTime)) {
+    if (role === 'owner' && (!restaurantName || !street || !pincode || !openingTime || !closingTime)) {
       return res.status(400).json({ message: 'Restaurant Name, both Timings, and full Address are required for owners' });
     }
 
@@ -39,6 +44,8 @@ export const registerUser = async (req: Request, res: Response) => {
       email,
       password: hashedPassword,
       role: assignedRole,
+      city,
+      area
     });
 
     if (user && assignedRole === 'owner') {
@@ -48,12 +55,15 @@ export const registerUser = async (req: Request, res: Response) => {
         address: {
           street,
           city,
+          area,
           pincode
         },
         timings: {
           openingTime,
           closingTime
         },
+        isVegOnly: isVegOnly || false,
+        isOpen: true,
         description: restaurantDescription || 'A new restaurant on FoodDash!',
         image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80', // Default image
         isApproved: false // Requires admin approval to go live
@@ -66,6 +76,8 @@ export const registerUser = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        city: user.city,
+        area: user.area,
         token: generateToken(user.id, user.role),
       });
     } else {
