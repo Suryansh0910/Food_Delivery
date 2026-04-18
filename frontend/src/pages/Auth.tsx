@@ -7,11 +7,19 @@ import { login, register } from '../services/authService';
 const Auth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
+  const [step, setStep] = useState(1);
   const [role, setRole] = useState<'customer' | 'owner'>('customer');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
+    restaurantName: '',
+    street: '',
+    city: '',
+    pincode: '',
+    openingTime: '',
+    closingTime: '',
+    restaurantDescription: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,6 +28,17 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Handle Step 1 to Step 2 for owners
+    if (!isLogin && role === 'owner' && step === 1) {
+      if (!formData.name || !formData.email || !formData.password) {
+        setError('Please fill out all credentials before proceeding.');
+        return;
+      }
+      setStep(2);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -144,18 +163,28 @@ const Auth = () => {
         >
           <div className="flex justify-between items-center border-b-4 border-black pb-6 mb-8 gap-4">
             <button
-              onClick={() => setIsLogin(true)}
+              onClick={() => { setIsLogin(true); setStep(1); }}
               className={`flex-1 text-2xl font-black uppercase pb-2 ${isLogin ? 'border-b-8 border-brand-600 translate-y-[4px]' : 'text-gray-400 opacity-50 hover:opacity-100'} transition-all`}
             >
               Log In
             </button>
             <button
-              onClick={() => setIsLogin(false)}
+              onClick={() => { setIsLogin(false); setStep(1); }}
               className={`flex-1 text-2xl font-black uppercase pb-2 ${!isLogin ? 'border-b-8 border-[#00E59B] translate-y-[4px]' : 'text-gray-400 opacity-50 hover:opacity-100'} transition-all`}
             >
               Sign Up
             </button>
           </div>
+
+          {step === 2 && !isLogin && role === 'owner' && (
+            <button 
+              type="button" 
+              onClick={() => setStep(1)} 
+              className="mb-4 flex items-center gap-1 font-black uppercase text-sm border-2 border-black px-2 py-1 hover:bg-[#FFD700] hover:translate-x-1 transition-all w-max"
+            >
+              &larr; Back to Credentials
+            </button>
+          )}
 
           {error && (
             <motion.div
@@ -169,86 +198,137 @@ const Auth = () => {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
 
-            {!isLogin && (
-              <div className="flex flex-col gap-2">
-                <label className="font-black uppercase text-sm bg-black text-white px-2 py-1 w-max">Choose Your Role</label>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setRole('customer')}
-                    className={`flex-1 flex flex-col items-center gap-2 p-4 border-4 border-black font-black uppercase transition-all ${role === 'customer' ? 'bg-[#00E59B] translate-y-[4px] shadow-none' : 'bg-white shadow-[4px_4px_0px_#000] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#000]'}`}
-                  >
-                    <User className="h-8 w-8 stroke-[3]" />
-                    I'm Hungry
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole('owner')}
-                    className={`flex-1 flex flex-col items-center gap-2 p-4 border-4 border-black font-black uppercase transition-all ${role === 'owner' ? 'bg-brand-600 text-white translate-y-[4px] shadow-none' : 'bg-white shadow-[4px_4px_0px_#000] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#000]'}`}
-                  >
-                    <Store className="h-8 w-8 stroke-[3]" />
-                    I Cater Food
-                  </button>
+            {/* STEP 1: Basic Information */}
+            {step === 1 && (
+              <>
+                {!isLogin && (
+                  <div className="flex flex-col gap-2">
+                    <label className="font-black uppercase text-sm bg-black text-white px-2 py-1 w-max">Choose Your Role</label>
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setRole('customer')}
+                        className={`flex-1 flex flex-col items-center gap-2 p-4 border-4 border-black font-black uppercase transition-all ${role === 'customer' ? 'bg-[#00E59B] translate-y-[4px] shadow-none' : 'bg-white shadow-[4px_4px_0px_#000] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#000]'}`}
+                      >
+                        <User className="h-8 w-8 stroke-[3]" />
+                        I'm Hungry
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRole('owner')}
+                        className={`flex-1 flex flex-col items-center gap-2 p-4 border-4 border-black font-black uppercase transition-all ${role === 'owner' ? 'bg-brand-600 text-white translate-y-[4px] shadow-none' : 'bg-white shadow-[4px_4px_0px_#000] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#000]'}`}
+                      >
+                        <Store className="h-8 w-8 stroke-[3]" />
+                        I Cater Food
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {!isLogin && (
+                  <div>
+                    <label className="font-black uppercase text-lg inline-block bg-[#00E59B] border-2 border-black px-2 mb-2 rotate-1">{role === 'owner' ? 'Owner Name' : 'Full Name'}</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder={role === 'owner' ? "Gordon Ramsay..." : "JANE DOE..."}
+                      className="w-full bg-white border-4 border-black p-4 font-bold text-xl outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300"
+                      required={!isLogin}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="font-black uppercase text-lg inline-block bg-[#FFD700] border-2 border-black px-2 mb-2 -rotate-1">Email Address</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="EMAIL@EXAMPLE.COM..."
+                    className="w-full bg-white border-4 border-black p-4 font-bold text-xl outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300"
+                    required
+                  />
                 </div>
-              </div>
+
+                <div>
+                  <label className="font-black uppercase text-lg inline-block bg-brand-500 text-white border-2 border-black px-2 mb-2 rotate-1">Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className="w-full bg-white border-4 border-black p-4 font-bold text-xl outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] placeholder-gray-300"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-black hover:scale-110 transition-transform focus:outline-none"
+                    >
+                      {showPassword ? <EyeOff className="h-6 w-6 stroke-[3]" /> : <Eye className="h-6 w-6 stroke-[3]" />}
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
 
-            {!isLogin && (
-              <div>
-                <label className="font-black uppercase text-lg inline-block bg-[#00E59B] border-2 border-black px-2 mb-2 rotate-1">Full Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="JANE DOE..."
-                  className="w-full bg-white border-4 border-black p-4 font-bold text-xl outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300"
-                  required={!isLogin}
-                />
-              </div>
+            {/* STEP 2: Restaurant Specific Information */}
+            {step === 2 && !isLogin && role === 'owner' && (
+              <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-4">
+                <div>
+                  <label className="font-black uppercase text-sm bg-[#00E59B] border-2 border-black px-2 py-1 inline-block -rotate-1 mb-1">Restaurant Name*</label>
+                  <input type="text" name="restaurantName" value={formData.restaurantName} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300" placeholder="HARDCORE BURGER CO..." required />
+                </div>
+                <div>
+                  <label className="font-black uppercase text-sm bg-brand-200 border-2 border-black px-2 py-1 inline-block rotate-1 mb-1">Street Address*</label>
+                  <input type="text" name="street" value={formData.street} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300" placeholder="123 MAIN ST..." required />
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="font-black uppercase text-sm bg-brand-200 border-2 border-black px-2 py-1 inline-block -rotate-1 mb-1">City*</label>
+                    <input type="text" name="city" value={formData.city} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300" placeholder="NEW YORK..." required />
+                  </div>
+                  <div className="flex-1">
+                    <label className="font-black uppercase text-sm bg-brand-200 border-2 border-black px-2 py-1 inline-block rotate-1 mb-1">Pincode*</label>
+                    <input type="text" name="pincode" value={formData.pincode} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300" placeholder="10001..." required />
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="font-black uppercase text-sm bg-[#FFD700] border-2 border-black px-2 py-1 inline-block -rotate-1 mb-1">Opens at*</label>
+                    <input type="time" name="openingTime" value={formData.openingTime} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase text-center" required />
+                  </div>
+                  <div className="flex-1">
+                    <label className="font-black uppercase text-sm bg-black text-white border-2 border-black px-2 py-1 inline-block rotate-1 mb-1">Closes at*</label>
+                    <input type="time" name="closingTime" value={formData.closingTime} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase text-center" required />
+                  </div>
+                </div>
+                <div>
+                  <label className="font-black uppercase text-sm bg-black text-white px-2 py-1 inline-block rotate-1 mb-1">Short Description</label>
+                  <input type="text" name="restaurantDescription" value={formData.restaurantDescription} onChange={handleChange} className="w-full bg-white border-4 border-black p-3 font-bold text-lg outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300" placeholder="BEST FOOD IN TOWN..." />
+                </div>
+              </motion.div>
             )}
-
-            <div>
-              <label className="font-black uppercase text-lg inline-block bg-[#FFD700] border-2 border-black px-2 mb-2 -rotate-1">Email Address</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="EMAIL@EXAMPLE.COM..."
-                className="w-full bg-white border-4 border-black p-4 font-bold text-xl outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] uppercase placeholder-gray-300"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="font-black uppercase text-lg inline-block bg-brand-500 text-white border-2 border-black px-2 mb-2 rotate-1">Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  className="w-full bg-white border-4 border-black p-4 font-bold text-xl outline-none focus:translate-x-[2px] focus:translate-y-[2px] transition-transform shadow-[4px_4px_0px_#000] placeholder-gray-300"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-black hover:scale-110 transition-transform focus:outline-none"
-                >
-                  {showPassword ? <EyeOff className="h-6 w-6 stroke-[3]" /> : <Eye className="h-6 w-6 stroke-[3]" />}
-                </button>
-              </div>
-            </div>
 
             <button
               type="submit"
               disabled={loading}
               className={`mt-4 bg-black text-white hover:text-[#FFD700] border-4 border-black p-4 font-black uppercase text-2xl flex justify-center items-center gap-2 shadow-[6px_6px_0px_#00E59B] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[4px_4px_0px_#00E59B] transition-all ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {loading ? 'Processing...' : (isLogin ? 'Smash To Login' : 'Create Account')} <ArrowRight className="h-6 w-6 stroke-[3]" />
+              {loading ? (
+                'Processing...'
+              ) : isLogin ? (
+                <>Log In <ArrowRight className="h-6 w-6 stroke-[3]" /></>
+              ) : step === 1 && role === 'owner' ? (
+                <>Next Step <ArrowRight className="h-6 w-6 stroke-[3]" /></>
+              ) : (
+                <>Create Account <ArrowRight className="h-6 w-6 stroke-[3]" /></>
+              )}
             </button>
 
           </form>

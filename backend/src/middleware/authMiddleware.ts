@@ -30,6 +30,14 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
+export const admin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(401).json({ message: 'Not authorized as an admin' });
+  }
+};
+
 export const authorize = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !req.user.role || !roles.includes(req.user.role)) {

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import Restaurant from '../models/Restaurant';
 
 const generateToken = (id: string, role: string) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET || 'fallback_secret', {
@@ -11,11 +12,20 @@ const generateToken = (id: string, role: string) => {
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { 
+      name, email, password, role, 
+      restaurantName, street, city, pincode, 
+      openingTime, closingTime, restaurantDescription 
+    } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // If owner, require restaurant data
+    if (role === 'owner' && (!restaurantName || !street || !city || !pincode || !openingTime || !closingTime)) {
+      return res.status(400).json({ message: 'Restaurant Name, both Timings, and full Address are required for owners' });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -30,6 +40,25 @@ export const registerUser = async (req: Request, res: Response) => {
       password: hashedPassword,
       role: assignedRole,
     });
+
+    if (user && assignedRole === 'owner') {
+      await Restaurant.create({
+        owner: user._id,
+        name: restaurantName,
+        address: {
+          street,
+          city,
+          pincode
+        },
+        timings: {
+          openingTime,
+          closingTime
+        },
+        description: restaurantDescription || 'A new restaurant on FoodDash!',
+        image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80', // Default image
+        isApproved: false // Requires admin approval to go live
+      });
+    }
 
     if (user) {
       res.status(201).json({

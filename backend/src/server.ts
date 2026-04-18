@@ -22,6 +22,8 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+import restaurantRoutes from './routes/restaurantRoutes';
+app.use('/api/restaurants', restaurantRoutes);
 
 // Connect to MongoDB using Mongoose
 const connectDB = async () => {

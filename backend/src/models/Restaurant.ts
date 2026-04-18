@@ -4,7 +4,15 @@ export interface IRestaurant extends Document {
   owner: mongoose.Types.ObjectId;
   name: string;
   description: string;
-  address: string;
+  address: {
+    street: string;
+    city: string;
+    pincode: string;
+  };
+  timings: {
+    openingTime: string;
+    closingTime: string;
+  };
   image?: string;
   isApproved: boolean;
   createdAt: Date;
@@ -15,7 +23,15 @@ const RestaurantSchema: Schema = new Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   name: { type: String, required: true },
   description: { type: String, required: true },
-  address: { type: String, required: true },
+  address: {
+    street: { type: String, required: true },
+    city: { type: String, required: true },
+    pincode: { type: String, required: true },
+  },
+  timings: {
+    openingTime: { type: String, required: true },
+    closingTime: { type: String, required: true }
+  },
   image: { type: String },
   isApproved: { type: Boolean, default: false } // Admin approval
 }, { timestamps: true });
