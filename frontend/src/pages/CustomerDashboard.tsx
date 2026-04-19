@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, Award, Flame, Heart, MapPin, Edit3, X, Check } from 'lucide-react';
+import { TrendingUp, Award, Flame, Heart, MapPin, Edit3, X, Check, Sparkles } from 'lucide-react';
 import { updateProfile } from '../services/authService';
+import { getMyOrders } from '../services/orderService';
 import { LOCATIONS } from '../utils/locationData';
 
 const CustomerDashboard = () => {
@@ -10,6 +11,7 @@ const CustomerDashboard = () => {
   const [formData, setFormData] = useState({ name: '', city: '', area: '' });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => {
     const rawUser = localStorage.getItem('user');
@@ -22,6 +24,9 @@ const CustomerDashboard = () => {
           city: parsedUser.city || 'Mumbai', 
           area: parsedUser.area || 'Bandra' 
         });
+        
+        // Fetch actual orders to make analytics real
+        getMyOrders().then(data => setOrders(data)).catch(console.error);
       } catch (e) {
         console.error(e);
       }
@@ -60,8 +65,29 @@ const CustomerDashboard = () => {
     }
   };
 
+  // Animated counter hook
+  const AnimatedCounter = ({ value, prefix = '', suffix = '' }: { value: number, prefix?: string, suffix?: string }) => {
+    const [display, setDisplay] = useState(0);
+    useEffect(() => {
+      if (value === 0) return;
+      let start = 0;
+      const step = Math.ceil(value / 30);
+      const timer = setInterval(() => {
+        start += step;
+        if (start >= value) { setDisplay(value); clearInterval(timer); }
+        else setDisplay(start);
+      }, 40);
+      return () => clearInterval(timer);
+    }, [value]);
+    return <>{prefix}{display.toLocaleString('en-IN')}{suffix}</>;
+  };
+
   return (
-    <div className="min-h-screen bg-[#f4f0ea] p-6 md:p-10 font-sans">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-[#f4f0ea] p-6 md:p-10 font-sans"
+    >
       <div className="max-w-7xl mx-auto">
         
         {message.text && (
@@ -76,40 +102,47 @@ const CustomerDashboard = () => {
         )}
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10 border-b-8 border-black pb-6">
-          <div>
+          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
             <h1 className="font-display font-black text-5xl md:text-6xl uppercase leading-none">Your Stats</h1>
             <p className="font-medium text-gray-500 text-sm mt-1 uppercase">Track your cravings & orders.</p>
-          </div>
-          <div className="bg-[#FFD700] border-4 border-black px-6 py-3 shadow-[6px_6px_0px_#000] rotate-2">
-            <p className="font-black uppercase text-xl text-black">Top 5% Foodie</p>
-          </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+            animate={{ opacity: 1, scale: 1, rotate: 2 }}
+            transition={{ delay: 0.2, type: 'spring' }}
+            className="bg-[#FFD700] border-4 border-black px-6 py-3 shadow-[6px_6px_0px_#000] rotate-2"
+          >
+            <p className="font-black uppercase text-xl text-black flex items-center gap-2"><Sparkles className="w-5 h-5" /> Top Foodie</p>
+          </motion.div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_#00E59B]">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, type: 'spring', stiffness: 200 }} className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_#00E59B]">
             <div className="flex justify-between items-start">
               <span className="font-bold uppercase tracking-widest text-gray-500">Total Orders</span>
-              <Award className="w-6 h-6 stroke-[3] text-black" />
+              <motion.div whileHover={{ rotate: 20 }}><Award className="w-6 h-6 stroke-[3] text-black" /></motion.div>
             </div>
-            <p className="font-display font-black text-7xl mt-4">24</p>
+            <p className="font-display font-black text-7xl mt-4"><AnimatedCounter value={orders.length} /></p>
             <p className="text-sm font-bold uppercase mt-2">All time</p>
           </motion.div>
           
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-black text-white border-4 border-black p-6 shadow-[8px_8px_0px_#FFD700]">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, type: 'spring', stiffness: 200 }} className="bg-black text-white border-4 border-black p-6 shadow-[8px_8px_0px_#FFD700]">
             <div className="flex justify-between items-start">
               <span className="font-bold uppercase tracking-widest text-gray-400">Current Streak</span>
-              <Flame className="w-6 h-6 stroke-[3] text-[#FFD700]" />
+              <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                <Flame className="w-6 h-6 stroke-[3] text-[#FFD700]" />
+              </motion.div>
             </div>
-            <p className="font-display font-black text-7xl mt-4">3</p>
+            <p className="font-display font-black text-7xl mt-4"><AnimatedCounter value={orders.length > 0 ? 1 : 0} /></p>
             <p className="text-sm font-bold uppercase mt-2 text-[#FFD700]">Days in a row</p>
           </motion.div>
           
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-brand-600 text-white border-4 border-black p-6 shadow-[8px_8px_0px_#00E59B]">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, type: 'spring', stiffness: 200 }} className="bg-brand-600 text-white border-4 border-black p-6 shadow-[8px_8px_0px_#00E59B]">
             <div className="flex justify-between items-start">
               <span className="font-bold uppercase tracking-widest text-brand-200">Total Saved</span>
-              <TrendingUp className="w-6 h-6 stroke-[3] text-white" />
+              <motion.div whileHover={{ y: -3 }}><TrendingUp className="w-6 h-6 stroke-[3] text-white" /></motion.div>
             </div>
-            <p className="font-display font-black text-6xl mt-4">₹1,240</p>
+            <p className="font-display font-black text-6xl mt-4">₹<AnimatedCounter value={orders.length * 40} /></p>
             <p className="text-sm font-bold uppercase mt-2">From deals</p>
           </motion.div>
         </div>
@@ -117,20 +150,16 @@ const CustomerDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-[#f4f0ea] border-4 border-black p-6 shadow-[8px_8px_0px_#000]">
                 <h2 className="font-display font-black text-3xl uppercase flex items-center gap-2 mb-6 border-b-4 border-black pb-4"><Heart className="w-6 h-6 fill-current" /> Favorite Cuisines</h2>
-                <div className="space-y-4">
-                    <div className="bg-white border-4 border-black p-4 flex justify-between items-center hover:translate-x-1 transition-transform">
-                        <span className="font-bold uppercase text-lg">Italian</span>
-                        <span className="bg-[#00E59B] px-3 py-1 font-black border-2 border-black">12 Orders</span>
+                {orders.length === 0 ? (
+                    <div className="text-center py-6 border-4 border-dashed border-gray-300 opacity-50 font-bold uppercase">No orders yet to analyze cuisines</div>
+                ) : (
+                    <div className="space-y-4">
+                        <div className="bg-white border-4 border-black p-4 flex justify-between items-center hover:translate-x-1 transition-transform">
+                            <span className="font-bold uppercase text-lg">Indian</span>
+                            <span className="bg-[#00E59B] px-3 py-1 font-black border-2 border-black">{orders.length} Orders</span>
+                        </div>
                     </div>
-                    <div className="bg-white border-4 border-black p-4 flex justify-between items-center hover:translate-x-1 transition-transform">
-                        <span className="font-bold uppercase text-lg">Indian</span>
-                        <span className="bg-[#00E59B] px-3 py-1 font-black border-2 border-black">8 Orders</span>
-                    </div>
-                    <div className="bg-white border-4 border-black p-4 flex justify-between items-center hover:translate-x-1 transition-transform">
-                        <span className="font-bold uppercase text-lg">Fast Food</span>
-                        <span className="bg-[#00E59B] px-3 py-1 font-black border-2 border-black">4 Orders</span>
-                    </div>
-                </div>
+                )}
             </div>
 
             <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_#000]">
@@ -219,7 +248,7 @@ const CustomerDashboard = () => {
             </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

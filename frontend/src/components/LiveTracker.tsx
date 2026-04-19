@@ -21,7 +21,7 @@ const homeIcon = new L.Icon({
 const DELIVERY_NAMES = ['Rahul Sharma', 'Vikram Singh', 'Aman Gupta', 'Deepak Verma', 'Suresh Kumar', 'Ravi Patel'];
 
 // Simulated Map Component
-export const LiveTracker = ({ orderId, isDelivered, city }: { orderId: string, isDelivered: boolean, city: string }) => {
+export const LiveTracker = ({ orderId, isDelivered, city, compact = false }: { orderId: string, isDelivered: boolean, city: string, compact?: boolean }) => {
     const [driverName] = useState(() => DELIVERY_NAMES[Math.floor(Math.random() * DELIVERY_NAMES.length)]);
     const [rating] = useState(() => (4.5 + Math.random() * 0.5).toFixed(1));
 
@@ -73,6 +73,27 @@ export const LiveTracker = ({ orderId, isDelivered, city }: { orderId: string, i
         return () => clearInterval(interval);
     }, [isDelivered]);
 
+    // Compact mode: just the map, no outer wrapper or driver header
+    if (compact) {
+        return (
+            <div className="h-full w-full relative z-0">
+                <MapContainer center={driverCoords} zoom={14} style={{ height: '100%', width: '100%' }} zoomControl={false}>
+                    <TileLayer
+                        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                        attribution='&copy; OpenStreetMap & CARTO'
+                    />
+                    <Marker position={userCoords} icon={homeIcon}>
+                        <Popup>Your Location</Popup>
+                    </Marker>
+                    <Marker position={driverCoords} icon={driverIcon}>
+                        <Popup>Driver is on the way!</Popup>
+                    </Marker>
+                    <MapPanner coords={driverCoords} />
+                </MapContainer>
+            </div>
+        );
+    }
+
     return (
         <div className="mt-6 border-4 border-black bg-white shadow-[8px_8px_0px_#00E59B]">
             {/* Driver Info Header */}
@@ -104,8 +125,6 @@ export const LiveTracker = ({ orderId, isDelivered, city }: { orderId: string, i
                     <Marker position={driverCoords} icon={driverIcon}>
                         <Popup>Driver is on the way!</Popup>
                     </Marker>
-
-                    {/* Auto-pan map to follow driver */}
                     <MapPanner coords={driverCoords} />
                 </MapContainer>
             </div>
