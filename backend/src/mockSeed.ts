@@ -34,6 +34,35 @@ const getRandom = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
 const generateName = () => `${getRandom(REST_ADJS)} ${getRandom(REST_NOUNS)}`;
 const generateDesc = () => `${getRandom(DESC_PARTS)} ${getRandom(FOODS)} exactly the way you like it.`;
 
+const CATEGORIES = ['Starters', 'Mains', 'Desserts', 'Beverages', 'Sides'];
+const MENU_ITEMS = {
+  'Starters': ['Paneer Tikka', 'Chicken Wings', 'Spring Rolls', 'Brutal Nachos', 'Soup of the Day', 'Garlic Bread', 'Crispy Corn'],
+  'Mains': ['Butter Chicken', 'Margherita Pizza', 'Hardcore Burger', 'Truffle Pasta', 'Sushi Platter', 'Veg Biryani', 'Hakka Noodles'],
+  'Desserts': ['Death by Chocolate', 'Classic Tiramisu', 'Gulab Jamun', 'New York Cheesecake', 'Ice Cream Sundae'],
+  'Beverages': ['Cold Coffee', 'Virgin Mojito', 'Fresh Lime Soda', 'Masala Chai', 'Coke Zero'],
+  'Sides': ['French Fries', 'Peri Peri Chips', 'Onion Rings', 'Mashed Potatoes']
+};
+
+const generateMenu = (isVegOnly: boolean) => {
+  const menu = [];
+  for (const cat of CATEGORIES) {
+    const itemsCount = 2 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < itemsCount; i++) {
+        const itemName = getRandom(MENU_ITEMS[cat as keyof typeof MENU_ITEMS]);
+        const isItemVeg = isVegOnly || Math.random() > 0.4;
+        menu.push({
+            name: itemName,
+            description: `${itemName} prepared with premium ingredients and our secret spices.`,
+            price: 150 + Math.floor(Math.random() * 800),
+            category: cat,
+            isVeg: isItemVeg,
+            image: getRandom(IMAGES)
+        });
+    }
+  }
+  return menu;
+};
+
 const seedMassiveData = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/food_delivery');
@@ -61,7 +90,8 @@ const seedMassiveData = async () => {
       timings: { openingTime: '11:00 AM', closingTime: '11:00 PM' },
       isVegOnly: false,
       isOpen: true,
-      isApproved: true
+      isApproved: true,
+      menu: generateMenu(false)
     });
 
     // 2. Generate 20 Restaurants per Area
@@ -122,6 +152,8 @@ const seedMassiveData = async () => {
           // Fake random creation dates spanning the last 2 years
           const randomPastDate = new Date(Date.now() - Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 730));
 
+          const isVegOnly = Math.random() > 0.7;
+
           restaurantsData.push({
             owner: ownerId,
             name: generateName(),
@@ -137,9 +169,10 @@ const seedMassiveData = async () => {
               openingTime: '10:00 AM',
               closingTime: '11:00 PM'
             },
-            isVegOnly: Math.random() > 0.7,
+            isVegOnly,
             isOpen: !isPending && Math.random() > 0.2, // Some are closed for the day
             isApproved: !isPending,
+            menu: generateMenu(isVegOnly),
             createdAt: randomPastDate,
             updatedAt: randomPastDate
           });
@@ -152,7 +185,7 @@ const seedMassiveData = async () => {
     
     console.log(`Massive Database Seeded Successfully! 🔥`);
     console.log(`Generated ~600 Live/Pending Restaurants across 3 Cities.`);
-    console.log(`Generated ~200 Customers and ~600 Owners.`);
+    console.log(`Generated ~200 Customers and ~600 Owners with full Menus.`);
     process.exit();
   } catch (error) {
     console.error(`Error:`, error);

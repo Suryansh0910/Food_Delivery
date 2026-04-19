@@ -6,6 +6,7 @@ import CustomerDashboard from './pages/CustomerDashboard';
 import CustomerRestaurants from './pages/CustomerRestaurants';
 import CustomerDeals from './pages/CustomerDeals.tsx';
 import CustomerOrders from './pages/CustomerOrders.tsx';
+import RestaurantDetail from './pages/RestaurantDetail';
 
 import OwnerDashboard from './pages/OwnerDashboard';
 import OwnerOrders from './pages/OwnerOrders';
@@ -32,6 +33,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
             <Route path="/customer/dashboard" element={<CustomerDashboard />} />
             <Route path="/customer/restaurants" element={<CustomerRestaurants />} />
+            <Route path="/restaurant/:id" element={<RestaurantDetail />} />
             <Route path="/customer/deals" element={<CustomerDeals />} />
             <Route path="/customer/orders" element={<CustomerOrders />} />
           </Route>

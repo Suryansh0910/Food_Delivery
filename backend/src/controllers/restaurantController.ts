@@ -30,21 +30,37 @@ export const getMyRestaurant = async (req: Request, res: Response) => {
 export const getRestaurants = async (req: Request, res: Response) => {
   try {
     const { city, area } = req.query;
-    
-    // Base filter: Only approved and open restaurants
-    const filter: any = { isApproved: true, isOpen: true };
-    
+
+    // Base filter: Only approved, open restaurants that actually have menu items
+    const filter: any = { 
+        isApproved: true, 
+        isOpen: true,
+        $and: [
+            { menu: { $exists: true } },
+            { $expr: { $gt: [{ $size: "$menu" }, 0] } }
+        ]
+    };
+
     if (city && city !== 'null' && city !== 'undefined') {
       filter['address.city'] = { $regex: new RegExp(`^${city}$`, 'i') };
     }
-    
-    console.log('Search Filter Applied:', JSON.stringify(filter));
-    
+
+    const { search } = req.query;
+    if (search) {
+      const searchRegex = { $regex: new RegExp(search as string, 'i') };
+      filter.$or = [
+        { name: searchRegex },
+        { description: searchRegex },
+        { 'menu.name': searchRegex },
+        { 'menu.category': searchRegex }
+      ];
+    }
+
     // Find all matching in city
     let restaurants = await Restaurant.find(filter).populate('owner', 'name');
-    
+
     console.log(`Found ${restaurants.length} restaurants matching filter.`);
-    
+
     // Sorting: If area is provided, sort restaurants in that area FIRST
     if (area && area !== 'null' && area !== 'undefined') {
       const targetArea = (area as string).toLowerCase();
@@ -121,7 +137,7 @@ export const getAdminStats = async (req: Request, res: Response) => {
     const liveRestaurants = await Restaurant.countDocuments({ isApproved: true });
     const pendingRestaurantsCount = await Restaurant.countDocuments({ isApproved: false });
     const currentlyOpen = await Restaurant.countDocuments({ isApproved: true, isOpen: true });
-    
+
     const totalCustomers = await User.countDocuments({ role: 'customer' });
     const totalOwners = await User.countDocuments({ role: 'owner' });
 
@@ -149,10 +165,10 @@ export const getOwnerStats = async (req: Request, res: Response) => {
     // Since we don't have an Order model yet in this snippet, 
     // we'll return some mock-but-consistent stats based on the restaurant's metadata
     // In a real app, you would aggregate from the Orders collection
-    
+
     // Using a simple hash of the restaurant name to generate consistent "fake" stats
     const hash = restaurant.name.length * 7;
-    
+
     res.json({
       totalOrders: hash * 12,
       todayOrders: Math.floor(hash / 3),
@@ -165,3 +181,29 @@ export const getOwnerStats = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+export const getRestaurantById = async (req: Request, res: Response) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.id);
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
+    res.json(restaurant);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const addMenuItem = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Not authorized' });
+    const restaurant = await Restaurant.findOne({ owner: req.user._id });
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
+
+    const { name, description, price, category, isVeg, image } = req.body;
+    restaurant.menu.push({ name, description, price, category, isVeg, image } as any);
+    await restaurant.save();
+
+    res.status(201).json(restaurant);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+

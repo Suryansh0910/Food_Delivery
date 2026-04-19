@@ -1,5 +1,14 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export interface IMenuItem {
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  image?: string;
+  isVeg: boolean;
+}
+
 export interface IRestaurant extends Document {
   owner: mongoose.Types.ObjectId;
   name: string;
@@ -14,6 +23,7 @@ export interface IRestaurant extends Document {
     openingTime: string;
     closingTime: string;
   };
+  menu: IMenuItem[];
   isVegOnly: boolean;
   isOpen: boolean;
   image?: string;
@@ -36,6 +46,14 @@ const RestaurantSchema: Schema = new Schema({
     openingTime: { type: String, required: true },
     closingTime: { type: String, required: true }
   },
+  menu: [{
+    name: { type: String, required: true },
+    description: { type: String },
+    price: { type: Number, required: true },
+    category: { type: String },
+    image: { type: String },
+    isVeg: { type: Boolean, default: true }
+  }],
   isVegOnly: { type: Boolean, default: false },
   isOpen: { type: Boolean, default: true },
   image: { type: String },

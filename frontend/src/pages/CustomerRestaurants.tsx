@@ -3,51 +3,55 @@ import { motion } from 'framer-motion';
 import { Search, MapPin, Navigation, Leaf, Star, Clock, ArrowRight, Filter } from 'lucide-react';
 import { getRestaurantsForCustomer } from '../services/restaurantService';
 
-const RestaurantCard = ({ restaurant, compact = false }: { restaurant: any; compact?: boolean }) => (
-  <motion.div
-    whileHover={{ y: -4, x: -4 }}
-    className={`bg-white border-4 border-black cursor-pointer transition-all flex flex-col h-full ${
-      compact ? 'shadow-[4px_4px_0px_#000] hover:shadow-[8px_8px_0px_#000]' : 'shadow-[8px_8px_0px_#000] hover:shadow-[12px_12px_0px_#000]'
-    }`}
-  >
-    <div className={`border-b-4 border-black overflow-hidden relative ${compact ? 'h-36' : 'h-48'}`}>
-      <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
-      <div className="absolute bottom-0 left-0 right-0 flex gap-1.5 p-2">
-        {restaurant.isVegOnly && (
-          <span className="bg-green-100 text-green-700 border-2 border-green-700 px-2 py-0.5 flex items-center gap-1 font-black text-xs uppercase">
-            <Leaf className="w-3 h-3" /> Veg
-          </span>
-        )}
-        <span className="bg-[#00E59B] border-2 border-black px-2 py-0.5 font-black text-xs uppercase">
-          ● Open
-        </span>
-      </div>
-    </div>
-    <div className={`${compact ? 'p-4' : 'p-5'} flex-1 flex flex-col`}>
-      <div className="flex justify-between items-start mb-1.5 gap-2">
-        <h3 className={`font-display font-black uppercase leading-none ${compact ? 'text-xl' : 'text-2xl'}`}>{restaurant.name}</h3>
-        <span className="bg-[#FFD700] border-2 border-black px-2 py-0.5 flex items-center gap-1 font-black text-xs shrink-0">
-          4.5 <Star className="w-3 h-3 fill-black" />
-        </span>
-      </div>
-      <p className="font-medium text-gray-500 text-xs uppercase mb-3 line-clamp-2">{restaurant.description}</p>
+import { Link } from 'react-router-dom';
 
-      <div className="mt-auto flex justify-between items-center border-t-2 border-gray-100 pt-3">
-        <div className="flex items-center gap-1.5 text-xs font-bold text-gray-600 uppercase">
-          <Clock className="w-3.5 h-3.5" /> 20–30 min
-        </div>
-        {compact ? (
-          <div className="flex items-center gap-1 text-xs font-bold uppercase">
-            <MapPin className="w-3.5 h-3.5" /> {restaurant.address?.area}
-          </div>
-        ) : (
-          <span className="bg-black text-white px-3 py-1 text-xs font-black uppercase hover:bg-brand-600 transition-colors">
-            Order Now
+const RestaurantCard = ({ restaurant, compact = false }: { restaurant: any; compact?: boolean }) => (
+  <Link to={`/restaurant/${restaurant._id}`}>
+    <motion.div
+      whileHover={{ y: -4, x: -4 }}
+      className={`bg-white border-4 border-black cursor-pointer transition-all flex flex-col h-full ${
+        compact ? 'shadow-[4px_4px_0px_#000] hover:shadow-[8px_8px_0px_#000]' : 'shadow-[8px_8px_0px_#000] hover:shadow-[12px_12px_0px_#000]'
+      }`}
+    >
+      <div className={`border-b-4 border-black overflow-hidden relative ${compact ? 'h-36' : 'h-48'}`}>
+        <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
+        <div className="absolute bottom-0 left-0 right-0 flex gap-1.5 p-2">
+          {restaurant.isVegOnly && (
+            <span className="bg-green-100 text-green-700 border-2 border-green-700 px-2 py-0.5 flex items-center gap-1 font-black text-xs uppercase">
+              <Leaf className="w-3 h-3" /> Veg
+            </span>
+          )}
+          <span className="bg-[#00E59B] border-2 border-black px-2 py-0.5 font-black text-xs uppercase">
+            ● Open
           </span>
-        )}
+        </div>
       </div>
-    </div>
-  </motion.div>
+      <div className={`${compact ? 'p-4' : 'p-5'} flex-1 flex flex-col`}>
+        <div className="flex justify-between items-start mb-1.5 gap-2">
+          <h3 className={`font-display font-black uppercase leading-none ${compact ? 'text-xl' : 'text-2xl'}`}>{restaurant.name}</h3>
+          <span className="bg-[#FFD700] border-2 border-black px-2 py-0.5 flex items-center gap-1 font-black text-xs shrink-0">
+            4.5 <Star className="w-3 h-3 fill-black" />
+          </span>
+        </div>
+        <p className="font-medium text-gray-500 text-xs uppercase mb-3 line-clamp-2">{restaurant.description}</p>
+  
+        <div className="mt-auto flex justify-between items-center border-t-2 border-gray-100 pt-3">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-gray-600 uppercase">
+            <Clock className="w-3.5 h-3.5" /> 20–30 min
+          </div>
+          {compact ? (
+            <div className="flex items-center gap-1 text-xs font-bold uppercase">
+              <MapPin className="w-3.5 h-3.5" /> {restaurant.address?.area}
+            </div>
+          ) : (
+            <span className="bg-black text-white px-3 py-1 text-xs font-black uppercase hover:bg-brand-600 transition-colors">
+              Order Now
+            </span>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  </Link>
 );
 
 const CustomerRestaurants = () => {
@@ -69,7 +73,8 @@ const CustomerRestaurants = () => {
     const fetchContent = async () => {
       setLoading(true);
       try {
-        const data = await getRestaurantsForCustomer(user.city, user.area);
+        // Backend now handles search across name, description, and menu items!
+        const data = await getRestaurantsForCustomer(user.city, user.area, search);
         setRestaurants(data);
       } catch (err) {
         console.error('Fetch Restaurants Error:', err);
@@ -77,15 +82,17 @@ const CustomerRestaurants = () => {
         setLoading(false);
       }
     };
-    fetchContent();
-  }, [user.city, user.area]);
 
-  const filtered = restaurants.filter(r =>
-    !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.description?.toLowerCase().includes(search.toLowerCase())
-  );
+    // Debounce search to avoid hitting server too hard
+    const timeoutId = setTimeout(() => {
+        fetchContent();
+    }, 500);
 
-  const exactMatches = filtered.filter(r => r.address.area === user.area);
-  const otherMatches = filtered.filter(r => r.address.area !== user.area);
+    return () => clearTimeout(timeoutId);
+  }, [user.city, user.area, search]);
+
+  const exactMatches = restaurants.filter(r => r.address.area.toLowerCase() === user.area.toLowerCase());
+  const otherMatches = restaurants.filter(r => r.address.area.toLowerCase() !== user.area.toLowerCase());
 
   return (
     <div className="min-h-screen bg-[#f4f0ea] font-sans">
