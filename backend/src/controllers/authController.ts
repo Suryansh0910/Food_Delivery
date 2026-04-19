@@ -160,10 +160,11 @@ export const updateMe = async (req: Request, res: Response) => {
 // TEMPORARY: Seed data via web route
 export const seedDatabase = async (req: Request, res: Response) => {
     try {
-      // Check if any users exist
-      const count = await User.countDocuments();
-      if (count > 0 && process.env.NODE_ENV === 'production') {
-        return res.status(400).json({ message: 'Database already has data. Seeding blocked for safety.' });
+      // Check if admin already exists
+      const adminExists = await User.findOne({ email: 'admin@fooddash.com' });
+      
+      if (adminExists) {
+        return res.status(200).json({ message: 'Admin user already exists. No seeding needed.' });
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -179,7 +180,7 @@ export const seedDatabase = async (req: Request, res: Response) => {
         area: 'Saket'
       });
 
-      res.status(201).json({ message: 'Database seeded successfully! You can now log in as admin.' });
+      res.status(201).json({ message: 'Admin account created successfully! You can now log in.' });
     } catch (error) {
       res.status(500).json({ message: 'Seeding failed', error });
     }
