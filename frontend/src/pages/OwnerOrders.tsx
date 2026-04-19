@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, TrendingUp, Settings, Leaf, ToggleLeft, ToggleRight, Package, ChevronRight, Check } from 'lucide-react';
+import { Plus, Settings, ToggleLeft, ToggleRight, Package, ChevronRight, Check } from 'lucide-react';
 import { getMyRestaurantProfile, toggleRestaurantStatus } from '../services/restaurantService';
 import { getRestaurantOrders, updateOrderStatus } from '../services/orderService';
 import { Link } from 'react-router-dom';

@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { TrendingUp, Award, Flame, Heart, MapPin, Edit3, X, Check, Sparkles } from 'lucide-react';
 import { updateProfile } from '../services/authService';
 import { getMyOrders } from '../services/orderService';
