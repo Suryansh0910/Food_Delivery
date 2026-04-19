@@ -156,3 +156,31 @@ export const updateMe = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// TEMPORARY: Seed data via web route
+export const seedDatabase = async (req: Request, res: Response) => {
+    try {
+      // Check if any users exist
+      const count = await User.countDocuments();
+      if (count > 0 && process.env.NODE_ENV === 'production') {
+        return res.status(400).json({ message: 'Database already has data. Seeding blocked for safety.' });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const password = await bcrypt.hash('password123', salt);
+
+      // Create Admin
+      await User.create({
+        name: 'System Admin',
+        email: 'admin@fooddash.com',
+        password,
+        role: 'admin',
+        city: 'Delhi',
+        area: 'Saket'
+      });
+
+      res.status(201).json({ message: 'Database seeded successfully! You can now log in as admin.' });
+    } catch (error) {
+      res.status(500).json({ message: 'Seeding failed', error });
+    }
+};
