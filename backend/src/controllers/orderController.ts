@@ -28,6 +28,17 @@ export const createOrder = async (req: Request, res: Response) => {
     });
 
     const createdOrder = await order.save();
+
+    // =============== FAKE DELIVERY SIMULATOR ===============
+    // Auto-advances the order status every few seconds so 
+    // the customer can watch it progress in real-time.
+    const oid = createdOrder._id;
+    setTimeout(async () => { await Order.findByIdAndUpdate(oid, { status: 'accepted' }); }, 10000); // 10s: Accepted
+    setTimeout(async () => { await Order.findByIdAndUpdate(oid, { status: 'preparing' }); }, 20000); // 20s: Preparing
+    setTimeout(async () => { await Order.findByIdAndUpdate(oid, { status: 'out_for_delivery' }); }, 45000); // 45s: En route
+    setTimeout(async () => { await Order.findByIdAndUpdate(oid, { status: 'delivered', paymentStatus: 'completed' }); }, 75000); // 75s: Delivered
+    // =======================================================
+
     res.status(201).json(createdOrder);
   } catch (error) {
     console.error('Create Order Error:', error);

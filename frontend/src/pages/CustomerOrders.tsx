@@ -3,6 +3,7 @@ import { getMyOrders } from '../services/orderService';
 import { Package, Clock, CheckCircle2, AlertCircle, RefreshCw, ChefHat, Bike } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { LiveTracker } from '../components/LiveTracker';
 
 const getStatusConfig = (status: string) => {
   switch (status) {
@@ -101,13 +102,72 @@ const CustomerOrders = () => {
                                 
                                 <div className="border-t-2 border-dashed border-gray-300 py-4 flex-1">
                                     <p className="font-bold uppercase text-sm mb-2 text-black/50">Order Summary:</p>
-                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
+                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 mb-4">
                                         {order.items.map((item: any, i: number) => (
                                             <li key={i} className="font-bold text-sm uppercase flex justify-between">
                                                 <span>{item.quantity}x {item.name}</span>
                                             </li>
                                         ))}
                                     </ul>
+                                    
+                                    {/* VISUAL PIPELINE TRACKER */}
+                                    <div className="mt-4 pt-4 border-t-2 border-black relative">
+                                        <div className="absolute top-[28px] left-0 w-full h-1 bg-gray-200 -z-10" />
+                                        
+                                        {/* Calculate progress percentage */}
+                                        <div 
+                                          className="absolute top-[28px] left-0 h-1 bg-[#00E59B] -z-10 transition-all duration-1000 ease-in-out" 
+                                          style={{ 
+                                            width: order.status === 'pending' ? '0%' : 
+                                                   order.status === 'accepted' ? '33%' : 
+                                                   order.status === 'preparing' ? '66%' : 
+                                                   (order.status === 'out_for_delivery' || order.status === 'delivered') ? '100%' : '0%' 
+                                          }} 
+                                        />
+
+                                        <div className="flex justify-between relative z-10 w-full">
+                                            {/* Step 1: Accepted */}
+                                            <div className="flex flex-col items-center">
+                                                <div className={`w-6 h-6 border-2 border-black rounded-full flex items-center justify-center mb-1 transition-colors ${['accepted', 'preparing', 'out_for_delivery', 'delivered'].includes(order.status) ? 'bg-[#00E59B]' : 'bg-white'}`}>
+                                                    {['accepted', 'preparing', 'out_for_delivery', 'delivered'].includes(order.status) && <CheckCircle2 className="w-4 h-4 text-black" />}
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase text-center w-16">Accepted</span>
+                                            </div>
+
+                                            {/* Step 2: Preparing */}
+                                            <div className="flex flex-col items-center">
+                                                <div className={`w-6 h-6 border-2 border-black rounded-full flex items-center justify-center mb-1 transition-colors ${['preparing', 'out_for_delivery', 'delivered'].includes(order.status) ? 'bg-[#00E59B]' : 'bg-white'}`}>
+                                                    {['preparing', 'out_for_delivery', 'delivered'].includes(order.status) && <CheckCircle2 className="w-4 h-4 text-black" />}
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase text-center w-16">Preparing</span>
+                                            </div>
+
+                                            {/* Step 3: En Route */}
+                                            <div className="flex flex-col items-center">
+                                                <div className={`w-6 h-6 border-2 border-black rounded-full flex items-center justify-center mb-1 transition-colors ${['out_for_delivery', 'delivered'].includes(order.status) ? 'bg-[#00E59B]' : 'bg-white'}`}>
+                                                    {['out_for_delivery', 'delivered'].includes(order.status) && <CheckCircle2 className="w-4 h-4 text-black" />}
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase text-center w-16">En Route</span>
+                                            </div>
+
+                                            {/* Step 4: Delivered */}
+                                            <div className="flex flex-col items-center">
+                                                <div className={`w-6 h-6 border-2 border-black rounded-full flex items-center justify-center mb-1 transition-colors ${order.status === 'delivered' ? 'bg-[#00E59B]' : 'bg-white'}`}>
+                                                    {order.status === 'delivered' && <CheckCircle2 className="w-4 h-4 text-black" />}
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase text-center w-16">Delivered</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* REAL MAP DRIVER TRACKING */}
+                                    {(order.status === 'out_for_delivery' || order.status === 'delivered') && (
+                                        <LiveTracker 
+                                          orderId={order._id} 
+                                          isDelivered={order.status === 'delivered'} 
+                                          city={order.restaurant?.address?.city || 'Delhi'}
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </motion.div>
