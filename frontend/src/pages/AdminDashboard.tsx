@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Users, Store, TrendingUp, RefreshCw, BarChart } from 'lucide-react';
+import API_BASE_URL from '../config';
 
 const StatCard = ({ label, value, color, icon }: { label: string; value: any; color: string; icon: React.ReactNode }) => (
   <motion.div
@@ -30,7 +31,7 @@ const AdminDashboard = () => {
       const token = localStorage.getItem('token');
       const headers = { 'Authorization': `Bearer ${token}` };
 
-      const statsRes = await fetch('http://localhost:5001/api/restaurants/admin/stats', { headers });
+      const statsRes = await fetch(`${API_BASE_URL}/restaurants/admin/stats`, { headers });
 
       if (statsRes.ok) setStats(await statsRes.json());
     } catch (err) {

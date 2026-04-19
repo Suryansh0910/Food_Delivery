@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, CheckSquare, XSquare, Users, Store, TrendingUp, Clock, RefreshCw } from 'lucide-react';
+import API_BASE_URL from '../config';
 
 const StatCard = ({ label, value, color, icon }: { label: string; value: any; color: string; icon: React.ReactNode }) => (
   <motion.div
@@ -33,8 +34,8 @@ const AdminApprovals = () => {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       const [statsRes, pendingRes] = await Promise.all([
-        fetch('http://localhost:5001/api/restaurants/admin/stats', { headers }),
-        fetch('http://localhost:5001/api/restaurants/pending', { headers }),
+        fetch(`${API_BASE_URL}/restaurants/admin/stats`, { headers }),
+        fetch(`${API_BASE_URL}/restaurants/pending`, { headers }),
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
@@ -50,7 +51,7 @@ const AdminApprovals = () => {
     try {
       setApproving(id);
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5001/api/restaurants/${id}/approve`, {
+      const res = await fetch(`${API_BASE_URL}/restaurants/${id}/approve`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });

@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:5001/api/restaurants';
+import API_BASE_URL from '../config';
+
+const API_URL = `${API_BASE_URL}/restaurants`;
 
 export const getRestaurantsForCustomer = async (city: string, area: string, search?: string) => {
   const token = localStorage.getItem('token');

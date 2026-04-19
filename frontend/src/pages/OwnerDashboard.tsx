@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, BarChart2, DollarSign, Activity, RefreshCw } from 'lucide-react';
+import API_BASE_URL from '../config';
 import { getMyRestaurantProfile } from '../services/restaurantService';
 
 const OwnerDashboard = () => {
@@ -18,7 +19,7 @@ const OwnerDashboard = () => {
       setRestaurant(response);
       
       const token = localStorage.getItem('token');
-      const statsRes = await fetch('http://localhost:5001/api/restaurants/my-restaurant/stats', {
+      const statsRes = await fetch(`${API_BASE_URL}/restaurants/my-restaurant/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (statsRes.ok) {

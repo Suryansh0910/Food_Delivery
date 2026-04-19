@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Store, Search } from 'lucide-react';
+import API_BASE_URL from '../config';
 
 const AdminRestaurants = () => {
   const [restaurants, setRestaurants] = useState<any[]>([]);
@@ -11,7 +12,7 @@ const AdminRestaurants = () => {
 
   const fetchRestaurants = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/restaurants');
+      const res = await fetch(`${API_BASE_URL}/restaurants`);
       if (res.ok) {
         setRestaurants(await res.json());
       }
