@@ -51,7 +51,7 @@ const CustomerOrders = () => {
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-10 border-b-8 border-black pb-4">
             <h1 className="font-display font-black text-4xl md:text-6xl uppercase leading-none">Order History</h1>
-            <button onClick={fetchOrders} className="bg-white border-4 border-black p-3 hover:bg-[#FFD700] hover:-translate-y-1 transition-all shadow-[4px_4px_0px_#000]">
+            <button onClick={() => fetchOrders(true)} className="bg-white border-4 border-black p-3 hover:bg-[#FFD700] hover:-translate-y-1 transition-all shadow-[4px_4px_0px_#000]">
                 <RefreshCw className="w-6 h-6 stroke-[3]" />
             </button>
           </div>
