@@ -31,18 +31,26 @@ export const getRestaurants = async (req: Request, res: Response) => {
   try {
     const { city, area } = req.query;
     
-    // Base filter: Only approved and open restaurants in that specific city
+    // Base filter: Only approved and open restaurants
     const filter: any = { isApproved: true, isOpen: true };
-    if (city) filter['address.city'] = city;
+    
+    if (city && city !== 'null' && city !== 'undefined') {
+      filter['address.city'] = { $regex: new RegExp(`^${city}$`, 'i') };
+    }
+    
+    console.log('Search Filter Applied:', JSON.stringify(filter));
     
     // Find all matching in city
     let restaurants = await Restaurant.find(filter).populate('owner', 'name');
     
+    console.log(`Found ${restaurants.length} restaurants matching filter.`);
+    
     // Sorting: If area is provided, sort restaurants in that area FIRST
-    if (area) {
+    if (area && area !== 'null' && area !== 'undefined') {
+      const targetArea = (area as string).toLowerCase();
       restaurants = restaurants.sort((a, b) => {
-        const aIsArea = a.address.area === area;
-        const bIsArea = b.address.area === area;
+        const aIsArea = a.address.area.toLowerCase() === targetArea;
+        const bIsArea = b.address.area.toLowerCase() === targetArea;
         if (aIsArea && !bIsArea) return -1;
         if (!aIsArea && bIsArea) return 1;
         return 0;
@@ -51,6 +59,7 @@ export const getRestaurants = async (req: Request, res: Response) => {
 
     res.json(restaurants);
   } catch (error) {
+    console.error('getRestaurants Error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -122,6 +131,35 @@ export const getAdminStats = async (req: Request, res: Response) => {
       currentlyOpen,
       totalCustomers,
       totalOwners
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+// @desc    Get stats for owner's restaurant
+// @route   GET /api/restaurants/my-restaurant/stats
+// @access  Private (Owner)
+export const getOwnerStats = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Not authorized' });
+
+    const restaurant = await Restaurant.findOne({ owner: req.user._id });
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
+
+    // Since we don't have an Order model yet in this snippet, 
+    // we'll return some mock-but-consistent stats based on the restaurant's metadata
+    // In a real app, you would aggregate from the Orders collection
+    
+    // Using a simple hash of the restaurant name to generate consistent "fake" stats
+    const hash = restaurant.name.length * 7;
+    
+    res.json({
+      totalOrders: hash * 12,
+      todayOrders: Math.floor(hash / 3),
+      revenue: hash * 1200,
+      todayRevenue: Math.floor(hash / 3) * 450,
+      avgWaitTime: 15 + (hash % 10),
+      rating: 4.2 + (hash % 8) / 10
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

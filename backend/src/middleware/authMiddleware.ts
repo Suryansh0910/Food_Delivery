@@ -16,17 +16,20 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret') as JwtPayload;
 
       const user = await User.findById(decoded.id).select('-password');
-      if (user) {
-         req.user = user;
+      if (!user) {
+        return res.status(401).json({ message: 'Not authorized, user not found' });
       }
-      next();
+      
+      req.user = user;
+      return next();
     } catch (error) {
-      res.status(401).json({ message: 'Not authorized, token failed' });
+      console.error('Auth check failed:', error);
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Not authorized, no token' });
+    return res.status(401).json({ message: 'Not authorized, no token' });
   }
 };
 

@@ -100,6 +100,8 @@ export const loginUser = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        city: user.city,
+        area: user.area,
         token: generateToken(user.id, user.role),
       });
     } else {
@@ -117,6 +119,39 @@ export const getMe = async (req: Request, res: Response) => {
     }
     const user = await User.findById(req.user.id).select('-password');
     res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+export const updateMe = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const { name, email, city, area } = req.body;
+
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.city = city || user.city;
+    user.area = area || user.area;
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      city: updatedUser.city,
+      area: updatedUser.area,
+      token: generateToken(updatedUser.id, updatedUser.role),
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

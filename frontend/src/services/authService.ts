@@ -28,3 +28,14 @@ export const getMe = async (token: string) => {
   });
   return response.json();
 };
+export const updateProfile = async (token: string, userData: any) => {
+  const response = await fetch(`${API_URL}/profile`, {
+    method: 'PUT',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(userData),
+  });
+  return response.json();
+};

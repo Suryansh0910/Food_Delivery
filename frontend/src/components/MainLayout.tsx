@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Utensils, User as UserIcon, Store, LogOut, CheckSquare, Search } from 'lucide-react';
+import { Menu, X, Utensils, User as UserIcon, Store, LogOut, CheckSquare, Search, Package } from 'lucide-react';
 
 export const MainLayout = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,25 +34,29 @@ export const MainLayout = () => {
   const navLinksList = () => {
     if (!user) {
       return [
-        { title: 'For Restaurants', href: '/auth', icon: <Store className="w-5 h-5 stroke-[3]" /> }
+        { title: 'For Restaurants', href: '/auth', icon: <Store className="w-4 h-4 stroke-[3]" /> }
       ];
     }
-    
+
     if (user.role === 'admin') {
       return [
-        { title: 'Approvals Queue', href: '/admin/dashboard', icon: <CheckSquare className="w-5 h-5 stroke-[3]" /> }
+        { title: 'Approvals', href: '/admin/approvals', icon: <CheckSquare className="w-4 h-4 stroke-[3]" /> },
+        { title: 'All Restaurants', href: '/admin/restaurants', icon: <Search className="w-4 h-4 stroke-[3]" /> },
       ];
     }
 
     if (user.role === 'owner') {
       return [
-        { title: 'Kitchen Dashboard', href: '/owner/dashboard', icon: <Store className="w-5 h-5 stroke-[3]" /> },
+        { title: 'Live Orders', href: '/owner/orders', icon: <span className="w-2 h-2 bg-[#00E59B] rounded-full animate-pulse inline-block" /> },
+        { title: 'Menu', href: '/owner/menu', icon: <Package className="w-4 h-4 stroke-[3]" /> },
       ];
     }
 
     // Customer
     return [
-      { title: 'Search Food', href: '/customer/dashboard', icon: <Search className="w-5 h-5 stroke-[3]" /> },
+      { title: 'Restaurants', href: '/customer/restaurants', icon: <Store className="w-4 h-4 stroke-[3]" /> },
+      { title: '🔥 Hot Deals', href: '/customer/deals', icon: null },
+      { title: 'My Orders', href: '/customer/orders', icon: null },
     ];
   };
 
